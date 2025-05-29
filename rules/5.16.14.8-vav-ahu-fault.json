@@ -1,0 +1,305 @@
+{
+    "G36AHU_FC2": {
+        "name": "Guideline 36 - FC#2 - MAT too low; should be between OAT and RAT",
+        "aftype": "analysis",
+        "aftimerule": "Periodic",
+        "frequency": 900,
+        "applicability": [
+            "Air_Handling_Unit"
+        ],
+        "definitions": {
+            "Mixed_Air_Temperature": {
+                "hasPoint": "Mixed_Air_Temperature_Sensor"
+            },
+            "Return_Air_Temperature": {
+                "hasPoint": "Return_Air_Temperature_Sensor"
+            },
+            "Outside_Air_Temperature": {
+                "hasPoint": "Outside_Air_Temperature_Sensor"
+            }
+        },
+        "output": "IF ((Mixed_Air_Temperature - Mixed_Air_Temperature_Error_Threshold) < MAX((Return_Air_Temperature + Return_Air_Temperature_Error_Threshold), (Outside_Air_Temperature + Outside_Air_Temperature_Error_Threshold))) THEN True ELSE False"
+    },
+    "G36AHU_FC3": {
+        "name": "Guideline 36 - FC#2 - MAT too high; should be between OAT and RAT",
+        "aftype": "analysis",
+        "aftimerule": "Periodic",
+        "frequency": 900,
+        "applicability": [
+            "Air_Handling_Unit"
+        ],
+        "definitions": {
+            "Mixed_Air_Temperature": {
+                "hasPoint": "Mixed_Air_Temperature_Sensor"
+            },
+            "Return_Air_Temperature": {
+                "hasPoint": "Return_Air_Temperature_Sensor"
+            },
+            "Outside_Air_Temperature": {
+                "hasPoint": "Outside_Air_Temperature_Sensor"
+            }
+        },
+        "output": "IF ((Mixed_Air_Temperature - Mixed_Air_Temperature_Error_Threshold) > MAX((Return_Air_Temperature + Return_Air_Temperature_Error_Threshold), (Outside_Air_Temperature + Outside_Air_Temperature_Error_Threshold))) THEN True ELSE False"
+    },
+    "G36AHU_FC5": {
+        "name": "SAT too low; should be higher than MAT (SATAVG + \u0190SAT \u2264 MATAVG - \u0190MAT + \uf044TSF)",
+        "aftype": "analysis",
+        "aftimerule": "Periodic",
+        "frequency": 900,
+        "applicability": [
+            "Air_Handling_Unit"
+        ],
+        "definitions": {
+            "Supply_Air_Temperature_Average": {
+                "hasPoint": "Supply_Air_Temperature_Sensor"
+            },
+            "Mixed_Air_Temperature_Average": {
+                "hasPoint": "Mixed_Air_Temperature_Sensor"
+            }
+        },
+        "output": "IF ((Supply_Air_Temperature_Average + Supply_Air_Temperature_Error_Threshold) <= (Mixed_Air_Temperature_Average - Mixed_Air_Temperature_Error_Threshold + Temperature_Difference_Setpoint_Factor)) THEN True ELSE False"
+    },
+    "G36AHU_FC6": {
+        "name": "Guideline 36 - OA Fraction Integrity - OA fraction is too low or too high relative to minimum setpoint when temperature differential is met",
+        "aftype": "analysis",
+        "aftimerule": "Periodic",
+        "frequency": 900,
+        "applicability": [
+            "Air_Handling_Unit"
+        ],
+        "definitions": {
+            "Return_Air_Temperature": {
+                "hasPoint": "Return_Air_Temperature_Sensor"
+            },
+            "Outside_Air_Temperature": {
+                "hasPoint": "Outside_Air_Temperature_Sensor"
+            },
+            "Min_Temperature_Differential_Setpoint": {
+                "choice": [
+                    {
+                        "hasPoint": "Differential_Temperature_Setpoint"
+                    }
+                ]
+            },
+            "Outside_Air_Fraction": {
+                "choice": [
+                    {
+                        "hasPoint": "Outside_Air_Flow_Sensor"
+                    },
+                    {
+                        "hasPart": {
+                            "Damper": {
+                                "hasPoint": "Damper_Position_Sensor"
+                            }
+                        }
+                    }
+                ]
+            },
+            "Min_Outside_Air_Fraction_Setpoint": {
+                "choice": [
+                    {
+                        "hasPoint": "Outside_Air_Flow_Setpoint"
+                    },
+                    {
+                        "hasPoint": "Damper_Position_Setpoint"
+                    }
+                ]
+            }
+        },
+        "output": "IF (ABS(Return_Air_Temperature - Outside_Air_Temperature) >= Min_Temperature_Differential_Setpoint) AND (ABS(Outside_Air_Fraction - Min_Outside_Air_Fraction_Setpoint) > Outside_Air_Fraction_Tolerance) THEN True ELSE False"
+    },
+    "G36VAVAHU_FC7": {
+        "name": "Guideline 36 - FC#7 - Supply air temperature too low in full heating",
+        "aftype": "analysis",
+        "aftimerule": "Periodic",
+        "frequency": 900,
+        "applicability": [
+            "Air_Handling_Unit",
+            "Fan_Coil_Unit"
+        ],
+        "definitions": {
+            "Supply_Air_Temperature_Average": {
+                "hasPoint": "Supply_Air_Temperature_Sensor"
+            },
+            "Supply_Air_Temperature_Setpoint_Active": {
+                "hasPoint": "Supply_Air_Temperature_Setpoint"
+            },
+            "Heating_Coil_Command": {
+                "choice": [
+                    {
+                        "hasPoint": "Heating_Command"
+                    },
+                    {
+                        "hasPart": {
+                            "Heating_Coil": {
+                                "hasPoint": "Heating_Command"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "output": "IF (Supply_Air_Temperature_Average < (Supply_Air_Temperature_Setpoint_Active - Supply_Air_Temperature_Error_Threshold)) AND (Heating_Coil_Command >= (0.99 - Heating_Coil_Command_Min_Full_Tolerance)) THEN True ELSE False"
+    },
+    "G36VAVAHU_FC8": {
+        "name": "Guideline 36 - FC#8 - SAT and MAT difference outside expected range (accounting for fan heat)",
+        "aftype": "analysis",
+        "aftimerule": "Periodic",
+        "frequency": 900,
+        "applicability": [
+            "Air_Handling_Unit",
+            "Fan_Coil_Unit"
+        ],
+        "definitions": {
+            "Supply_Air_Temperature_Sensor": {
+                "hasPoint": "Supply_Air_Temperature_Sensor"
+            },
+            "Mixed_Air_Temperature_Sensor": {
+                "hasPoint": "Mixed_Air_Temperature_Sensor"
+            },
+            "Delta_T_Supply_Fan_Setpoint": {
+                "hasPoint": "Temperature_Setpoint"
+            },
+            "Operating_Mode": {
+                "hasPoint": "Status"
+            }
+        },
+        "output": "IF (Operating_Mode == 2) AND (ABS(Supply_Air_Temperature_Sensor - Delta_T_Supply_Fan_Setpoint - Mixed_Air_Temperature_Sensor) > SQRT(POW(Supply_Air_Temperature_Error_Threshold, 2) + POW(Mixed_Air_Temperature_Error_Threshold, 2))) THEN True ELSE False"
+    },
+    "G36VAVAHU_FC9": {
+        "name": "Guideline 36 - FC#9 - OAT is too high for free cooling without additional mechanical cooling",
+        "aftype": "analysis",
+        "aftimerule": "Periodic",
+        "frequency": 900,
+        "applicability": [
+            "Air_Handling_Unit",
+            "Fan_Coil_Unit"
+        ],
+        "definitions": {
+            "Outside_Air_Temperature": {
+                "hasPoint": "Outside_Air_Temperature_Sensor"
+            },
+            "Outside_Air_Temperature_Error_Threshold": {
+                "hasPoint": "Temperature_Setpoint"
+            },
+            "Supply_Air_Temperature_Setpoint_Reference": {
+                "hasPoint": "Supply_Air_Temperature_Setpoint"
+            },
+            "Supply_Fan_Temperature_Gain_Delta": {
+                "hasPoint": "Temperature_Setpoint"
+            }
+        },
+        "output": "IF ((Outside_Air_Temperature - Outside_Air_Temperature_Error_Threshold) > (Supply_Air_Temperature_Setpoint_Reference - Supply_Fan_Temperature_Gain_Delta + Supply_Air_Temperature_Error_Threshold)) THEN True ELSE False"
+    },
+    "G36VAVAHU_FC10": {
+        "name": "Guideline 36 - FC#10 - Mixed Air Temperature vs Outside Air Temperature Discrepancy",
+        "aftype": "analysis",
+        "aftimerule": "Periodic",
+        "frequency": 900,
+        "applicability": [
+            "Air_Handling_Unit"
+        ],
+        "definitions": {
+            "Mixed_Air_Temperature_Sensor": {
+                "hasPoint": "Mixed_Air_Temperature_Sensor"
+            },
+            "Outside_Air_Temperature_Sensor": {
+                "hasPoint": "Outside_Air_Temperature_Sensor"
+            }
+        },
+        "output": "IF (abs(Mixed_Air_Temperature_Sensor - Outside_Air_Temperature_Sensor) > sqrt( (Mixed_Air_Temperature_Error_Threshold * Mixed_Air_Temperature_Error_Threshold) + (Outside_Air_Temperature_Error_Threshold * Outside_Air_Temperature_Error_Threshold) )) THEN True ELSE False"
+    },
+    "G36VAVAHU_FC11": {
+        "name": "Guideline 36 - FC#11 - OAT is too low for mechanical cooling",
+        "aftype": "analysis",
+        "aftimerule": "Periodic",
+        "frequency": 900,
+        "applicability": [
+            "Air_Handling_Unit",
+            "Fan_Coil_Unit"
+        ],
+        "definitions": {
+            "Outside_Air_Temperature": {
+                "hasPoint": "Outside_Air_Temperature_Sensor"
+            },
+            "OAT_Error_Threshold": {
+                "hasPoint": "Temperature_Setpoint"
+            },
+            "Supply_Air_Temperature_Setpoint": {
+                "hasPoint": "Supply_Air_Temperature_Setpoint"
+            },
+            "Supply_Fan_Temperature_Rise_Delta": {
+                "hasPoint": "Differential_Temperature_Setpoint"
+            },
+            "SAT_Error_Threshold": {
+                "hasPoint": "Temperature_Setpoint"
+            }
+        },
+        "output": "IF (Outside_Air_Temperature + OAT_Error_Threshold < Supply_Air_Temperature_Setpoint - Supply_Fan_Temperature_Rise_Delta - SAT_Error_Threshold) THEN True ELSE False"
+    },
+    "G36VAVAHU_FC12": {
+        "name": "Guideline 36 - FC#12 - SAT too high; should be less than MAT",
+        "aftype": "analysis",
+        "aftimerule": "Periodic",
+        "frequency": 900,
+        "applicability": [
+            "Air_Handling_Unit",
+            "Fan_Coil_Unit"
+        ],
+        "definitions": {
+            "Supply_Air_Temperature": {
+                "choice": [
+                    {
+                        "hasPoint": "Supply_Air_Temperature_Sensor"
+                    },
+                    {
+                        "hasPoint": "Discharge_Air_Temperature_Sensor"
+                    }
+                ]
+            },
+            "Supply_Fan_Heat_Gain_Delta_T": {
+                "hasPoint": "Differential_Temperature_Setpoint"
+            },
+            "Mixed_Air_Temperature": {
+                "hasPoint": "Mixed_Air_Temperature_Sensor"
+            }
+        },
+        "output": "IF (Mixed_Air_Temperature IS NOT NULL) AND ((Supply_Air_Temperature - Supply_Air_Temperature_Error_Threshold - Supply_Fan_Heat_Gain_Delta_T) >= (Mixed_Air_Temperature + Mixed_Air_Temperature_Error_Threshold)) THEN True ELSE False"
+    },
+    "G36VAVAHU_FC13": {
+        "name": "Guideline 36 - FC#13 - SAT too high in full cooling",
+        "aftype": "analysis",
+        "aftimerule": "Periodic",
+        "frequency": 900,
+        "applicability": [
+            "Air_Handling_Unit",
+            "Fan_Coil_Unit"
+        ],
+        "definitions": {
+            "Supply_Air_Temperature": {
+                "hasPoint": "Supply_Air_Temperature_Sensor"
+            },
+            "Supply_Air_Temperature_Setpoint": {
+                "hasPoint": "Supply_Air_Temperature_Setpoint"
+            },
+            "Cooling_Command": {
+                "choice": [
+                    {
+                        "hasPoint": "Command"
+                    },
+                    {
+                        "hasPoint": "Command"
+                    },
+                    {
+                        "hasPart": {
+                            "Cooling_Coil": {
+                                "hasPoint": "Valve_Command"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "output": "IF (Supply_Air_Temperature > (Supply_Air_Temperature_Setpoint + SAT_Error_Threshold)) AND (Cooling_Command >= 0.99) THEN True ELSE False"
+    }
+}
