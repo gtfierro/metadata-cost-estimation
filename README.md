@@ -6,7 +6,8 @@ Leave feedback or make changes! We all need a better way of estimating the cost 
 
 To avoid you needing to run the code yourself (though you can, see below!) I am checking in different versions of the notebook in the `checkpoints/` folder:
 
-- [2025-04-29](https://github.com/gtfierro/metadata-cost-estimation/blob/main/checkpoints/point_cost-2025-04-29.ipynb)
+- [2025-04-30](https://github.com/gtfierro/metadata-cost-estimation/blob/main/checkpoints/point_cost-2025-04-30.ipynb) (includes G36 4.1 and 4.2 point lists)
+- [2025-04-29](https://github.com/gtfierro/metadata-cost-estimation/blob/main/checkpoints/point_cost-2025-04-29.ipynb) (uses FDD rules from G36 5.16)
 
 ## How to run
 

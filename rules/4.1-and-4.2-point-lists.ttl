@@ -1,0 +1,227 @@
+@prefix brick: <https://brickschema.org/schema/Brick#> .
+@prefix rules: <urn:rules/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix : <https://example.org/shapes#> .
+
+# Main VAV Terminal Unit - Cooling Only Shape
+:VAVTerminalUnitCoolingOnlyShape a sh:NodeShape, owl:Class, rules:InferredRuleShape ;
+    sh:targetClass brick:Variable_Air_Volume_Box, brick:VAV ;
+    rdfs:label "VAV Terminal Unit - Cooling Only Shape" ;
+    rdfs:comment "Validates VAV boxes have all required parts and points for cooling only operation" ;
+
+    # Required: VAV box damper with actuator
+    sh:property [
+        sh:path brick:hasPart ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:name "VAV_Damper" ;
+        sh:description "VAV box must have a damper" ;
+        sh:node :DamperShape ;
+    ] ;
+
+    # Required: Discharge air flow measurement (differential pressure transducer)
+    sh:property [
+        sh:path brick:hasPoint ;
+        sh:node brick:Air_Flow_Sensor ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:name "Discharge_Air_Flow_Sensor" ;
+        sh:description "Required air flow sensor using differential pressure transducer" ;
+    ] ;
+
+    # Required: Zone temperature measurement
+    sh:property [
+        sh:path brick:hasPoint ;
+        sh:node brick:Zone_Air_Temperature_Sensor ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:name "Zone_Temperature_Sensor" ;
+        sh:description "Required zone temperature sensor" ;
+    ] ;
+
+    # Optional: Thermostat with local override
+    sh:property [
+        sh:path brick:hasPart ;
+        sh:maxCount 1 ;
+        sh:name "Zone_Thermostat" ;
+        sh:description "Optional thermostat for local override" ;
+        sh:node :ThermostatShape ;
+    ] ;
+
+    # Optional: Occupancy sensor
+    sh:property [
+        sh:path brick:hasPoint ;
+        sh:node brick:Occupancy_Sensor ;
+        sh:maxCount 1 ;
+        sh:name "Occupancy_Sensor" ;
+        sh:description "Optional occupancy sensor" ;
+    ] ;
+
+    # Optional: Window switch
+    sh:property [
+        sh:path brick:hasPoint ;
+        sh:node brick:Switch ;
+        sh:maxCount 1 ;
+        sh:name "Window_Switch" ;
+        sh:description "Optional window switch" ;
+    ] ;
+
+    # Optional: Zone CO2 level
+    sh:property [
+        sh:path brick:hasPoint ;
+        sh:node brick:Zone_CO2_Level_Sensor ;
+        sh:maxCount 1 ;
+        sh:name "Zone_CO2_Sensor" ;
+        sh:description "Optional zone CO2 level sensor" ;
+    ] .
+
+# Damper equipment shape
+:DamperShape a sh:NodeShape ;
+    sh:targetClass brick:Damper ;
+    rdfs:label "VAV Damper Shape" ;
+
+    # Required: Damper position command (modulating or floating actuator)
+    sh:property [
+        sh:path brick:hasPoint ;
+        sh:node brick:Damper_Position_Command ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:name "Damper_Position_Command" ;
+        sh:description "Required damper position command for modulating or floating actuator" ;
+    ] ;
+
+    # Optional: Damper position sensor feedback
+    sh:property [
+        sh:path brick:hasPoint ;
+        sh:node brick:Damper_Position_Sensor ;
+        sh:maxCount 1 ;
+        sh:name "Damper_Position_Sensor" ;
+        sh:description "Optional damper position feedback sensor" ;
+    ] .
+
+# Thermostat equipment shape
+:ThermostatShape a sh:NodeShape ;
+    sh:targetClass brick:Thermostat ;
+    rdfs:label "Zone Thermostat Shape" ;
+
+    # Zone temperature setpoint adjustment capability
+    sh:property [
+        sh:path brick:hasPoint ;
+        sh:node brick:Zone_Air_Temperature_Setpoint ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:name "Zone_Temperature_Setpoint" ;
+        sh:description "Zone thermostat setpoint adjustment capability" ;
+    ] .
+
+
+
+# Main VAV Terminal Unit with Reheat Shape
+:VAVTerminalUnitWithReheatShape a sh:NodeShape, owl:Class, rules:InferredRuleShape ;
+    sh:targetClass brick:Variable_Air_Volume_Box, brick:VAV ;
+    rdfs:label "VAV Terminal Unit with Reheat Shape" ;
+    rdfs:comment "Validates that VAV boxes have all required parts and points according to ASHRAE Guideline 36-2021 Table 4.2" ;
+
+    # Required Equipment Parts
+    sh:property [
+        sh:path brick:hasPart ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:name "VAV_Damper" ;
+        sh:description "VAV box must have exactly one damper" ;
+        sh:node :DamperShape ;
+    ] ;
+
+    sh:property [
+        sh:path brick:hasPart ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:name "Heating_Coil" ;
+        sh:description "VAV box with reheat must have exactly one heating coil" ;
+        sh:node :HeatingCoilShape ;
+    ] ;
+
+    # Required Points - Discharge Air Flow
+    sh:property [
+        sh:path brick:hasPoint ;
+        sh:node brick:Discharge_Air_Flow_Sensor ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:name "Discharge_Air_Flow_Sensor" ;
+        sh:description "VAV box must have discharge air flow measurement" ;
+    ] ;
+
+    # Required Points - Discharge Air Temperature
+    sh:property [
+        sh:path brick:hasPoint ;
+        sh:node brick:Discharge_Air_Temperature_Sensor ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:name "Discharge_Air_Temperature_Sensor" ;
+        sh:description "VAV box must have discharge air temperature measurement" ;
+    ] ;
+
+    # Required Points - Zone Temperature
+    sh:property [
+        sh:path brick:hasPoint ;
+        sh:node brick:Zone_Air_Temperature_Sensor ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:name "Zone_Air_Temperature_Sensor" ;
+        sh:description "VAV box must have zone air temperature measurement" ;
+    ] ;
+
+    # Applicable Points - Local Override
+    sh:property [
+        sh:path brick:hasPoint ;
+        sh:node brick:Override_Command ;
+        sh:maxCount 1 ;
+        sh:name "Local_Override_Command" ;
+        sh:description "VAV box may have local override capability" ;
+    ] ;
+
+    # Applicable Points - Occupancy Sensor
+    sh:property [
+        sh:path brick:hasPoint ;
+        sh:node brick:Occupancy_Sensor ;
+        sh:maxCount 1 ;
+        sh:name "Occupancy_Sensor" ;
+        sh:description "VAV box may have occupancy sensing" ;
+    ] ;
+
+    # Applicable Points - Zone Temperature Setpoint Adjustment
+    sh:property [
+        sh:path brick:hasPoint ;
+        sh:node brick:Target_Zone_Air_Temperature_Setpoint ;
+        sh:maxCount 1 ;
+        sh:name "Zone_Temperature_Setpoint" ;
+        sh:description "VAV box may have adjustable zone temperature setpoint" ;
+    ] ;
+
+    # Applicable Points - Zone CO2 Level
+    sh:property [
+        sh:path brick:hasPoint ;
+        sh:node brick:CO2_Sensor ;
+        sh:maxCount 1 ;
+        sh:name "Zone_CO2_Sensor" ;
+        sh:description "VAV box may have CO2 sensing for demand control ventilation" ;
+    ] .
+
+# Heating Coil Shape - defines required points for the heating coil
+:HeatingCoilShape a sh:NodeShape ;
+    sh:targetClass brick:Heating_Coil ;
+    rdfs:label "Heating Coil Shape" ;
+    rdfs:comment "Validates that heating coils have required control points" ;
+
+    # Required - Heating Command
+    sh:property [
+        sh:path brick:hasPoint ;
+        sh:node brick:Heating_Command ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:name "Heating_Command" ;
+        sh:description "Heating coil must have heating command point" ;
+    ] .
