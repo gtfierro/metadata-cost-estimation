@@ -150,11 +150,14 @@ def _(mo):
 @app.cell
 def _():
     # now let's try an example with a real building and set of FDD rules
-    rules_file = 'rules/5.16.14.8-vav-ahu-fault.json' # from the relevant section of G36
+    # rules_file = 'rules/5.16.14.8-vav-ahu-fault.json' # from the relevant section of G36
+    rules_file = 'rules/4.1-and-4.2-point-lists.ttl' # point lists from 4.1, 4.2 of G36
     model_file = 'bldg30.ttl'
 
     from applicationsuite import ApplicationSuite
     suite = ApplicationSuite(rules_file, model_file)
+    print(f"Set of apps: {suite.A}")
+    print(f"Set of classes: {suite.C}")
     return (suite,)
 
 
@@ -221,6 +224,11 @@ def _(costs, pdf, sns):
             if bar.get_x() + bar.get_width() > threshold:
                 bar.set_facecolor('red')  # Color bars above the threshold in red
     g
+    return
+
+
+@app.cell
+def _():
     return
 
 

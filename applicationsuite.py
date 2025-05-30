@@ -26,21 +26,22 @@ class ApplicationSuite:
         """
         Initialize the ApplicationSuite with the rules file and model file.
 
-        :param rules_file: Path to the JSON rules file.
+        :param rules_file: Path to the JSON rules file OR a SHACL shapes file.
         :param model_file: Path to the model file.
         """
-        self.rules_file = rules_file
         self.model_file = model_file
         self.bm = BuildingMOTIF("sqlite://", shacl_engine="topquadrant")
         self.brick = Library.load(ontology_graph="https://brickschema.org/schema/1.4/Brick.ttl",
                                   infer_templates=False, run_shacl_inference=False)
         self.model = Model.from_file(model_file)
 
-        RULES = Namespace("urn:rules/")
-        rules = json.load(open(self.rules_file, "r"))
-        shapes_graph = json_to_shapes(rules, RULES, imports=["https://brickschema.org/schema/1.4/Brick"])
         self.sc = ShapeCollection.create()
-        self.sc.graph += shapes_graph
+        self.rules_file = rules_file
+
+        if rules_file.endswith(".json"):
+            self._handle_json_rules()
+        elif rules_file.endswith(".ttl"):
+            self._handle_shacl_rules()
 
         # generate templates for each of the shapes; this makes it possible
         # to analyze the requirements of the shapes in an easier manner
@@ -49,7 +50,21 @@ class ApplicationSuite:
 
         # compile the model so we get all the inferred classes/etc
         self._compiled = self.model.compile([self.brick.get_shape_collection(), self.sc])
-        self._compiled.graph.serialize("/tmp/compiled.ttl")
+
+    def _handle_json_rules(self):
+        RULES = Namespace("urn:rules/")
+        rules = json.load(open(self.rules_file, "r"))
+        shapes_graph = json_to_shapes(rules, RULES, imports=["https://brickschema.org/schema/1.4/Brick"])
+        self.sc.graph += shapes_graph
+
+    def _handle_shacl_rules(self):
+        """
+        Handle SHACL rules file by loading it into the ShapeCollection.
+        This method is not used in the current implementation but can be
+        used if a SHACL rules file is provided instead of a JSON file.
+        """
+        # Load the SHACL rules file into the ShapeCollection
+        self.sc.graph.parse(self.rules_file, format="turtle")
 
     @cached_property
     def app_brick_union_graph(self):
@@ -145,7 +160,7 @@ class ApplicationSuite:
 
     @lru_cache
     def points_for_application(self, application: str) -> list[tuple[str, str]]:
-        templates = self.lib.get_template_by_name(application)
+        templates = self.lib.get_template_by_name(application).inline_dependencies()
         body = templates.body + self.brick.get_shape_collection().graph
         # find all of the parameters which are ?x rdf:type/rdf:subClassOf brick:Point
         # using a SPARQL query on the body + Brick ontology
