@@ -31,8 +31,11 @@ class ApplicationSuite:
         """
         self.model_file = model_file
         self.bm = BuildingMOTIF("sqlite://", shacl_engine="topquadrant")
-        self.brick = Library.load(ontology_graph="https://brickschema.org/schema/1.4/Brick.ttl",
-                                  infer_templates=False, run_shacl_inference=False)
+        self.brick = Library.load(
+            ontology_graph="https://brickschema.org/schema/1.4/Brick.ttl",
+            infer_templates=False,
+            run_shacl_inference=False,
+        )
         self.model = Model.from_file(model_file)
 
         self.sc = ShapeCollection.create()
@@ -49,12 +52,16 @@ class ApplicationSuite:
         self.sc.infer_templates(self.lib)
 
         # compile the model so we get all the inferred classes/etc
-        self._compiled = self.model.compile([self.brick.get_shape_collection(), self.sc])
+        self._compiled = self.model.compile(
+            [self.brick.get_shape_collection(), self.sc]
+        )
 
     def _handle_json_rules(self):
         RULES = Namespace("urn:rules/")
         rules = json.load(open(self.rules_file, "r"))
-        shapes_graph = json_to_shapes(rules, RULES, imports=["https://brickschema.org/schema/1.4/Brick"])
+        shapes_graph = json_to_shapes(
+            rules, RULES, imports=["https://brickschema.org/schema/1.4/Brick"]
+        )
         self.sc.graph += shapes_graph
 
     def _handle_shacl_rules(self):
@@ -73,7 +80,11 @@ class ApplicationSuite:
 
         :return: Union graph of the compiled model and Brick ontology.
         """
-        return self._compiled.graph + self.brick.get_shape_collection().graph + self.sc.graph
+        return (
+            self._compiled.graph
+            + self.brick.get_shape_collection().graph
+            + self.sc.graph
+        )
 
     @property
     def compiled(self):
@@ -155,7 +166,9 @@ class ApplicationSuite:
             }
         """
         # execute the query
-        results = self.app_brick_union_graph.query(query, initBindings={"equip_class": equip_class})
+        results = self.app_brick_union_graph.query(
+            query, initBindings={"equip_class": equip_class}
+        )
         return [row[0] for row in results]
 
     @lru_cache
@@ -182,9 +195,12 @@ class ApplicationSuite:
         :param equip_class: The equipment class to query.
         :return: Number of instances of the given equipment class.
         """
-        res = self.compiled.graph.query("""SELECT ?inst WHERE {
+        res = self.compiled.graph.query(
+            """SELECT ?inst WHERE {
             ?inst rdf:type/rdfs:subClassOf* ?class
-        }""", initBindings={'class': equip_class})
+        }""",
+            initBindings={"class": equip_class},
+        )
         return set(res)
 
     # let's compute the sum using the equation above
@@ -204,15 +220,20 @@ class ApplicationSuite:
     def compute_labor_time_df(self, T_builds, T_points, T_configs, C_rates):
         results = []
         # also including 20% overhead on cost + 10% profit margin
-        for T_build, T_point, T_config, C_rate in product(T_builds, T_points, T_configs, C_rates):
+        for T_build, T_point, T_config, C_rate in product(
+            T_builds, T_points, T_configs, C_rates
+        ):
             time = self.compute_labor_time(T_build, T_point, T_config)
-            results.append({
-                "C_rate": C_rate,
-                "T_build": T_build,
-                "T_perpoint": T_point,
-                "time": time,
-                "cost": (time * C_rate / 3600) * 1.3,  # convert to hours, add 30% overhead
-            })
+            results.append(
+                {
+                    "C_rate": C_rate,
+                    "T_build": T_build,
+                    "T_perpoint": T_point,
+                    "time": time,
+                    "cost": (time * C_rate / 3600)
+                    * 1.3,  # convert to hours, add 30% overhead
+                }
+            )
         df = pd.DataFrame(results)
         return df
 
@@ -232,9 +253,8 @@ class ApplicationSuite:
     def compute_point_cost_df(self, C_points):
         results = []
         for C_point in C_points:
-            results.append({
-                "C_point": C_point,
-                "cost": self.compute_point_cost(C_point)
-            })
+            results.append(
+                {"C_point": C_point, "cost": self.compute_point_cost(C_point)}
+            )
         df = pd.DataFrame(results)
         return df
